@@ -37,6 +37,18 @@ QString ContainerProps::containerTypeToString(amnezia::DockerContainer c){
     return containerKey.toLower();
 }
 
+amnezia::ContainerTool ContainerProps::containerToolForContainer(amnezia::DockerContainer container)
+{
+    switch (container) {
+        case DockerContainer::JitsiMeet:
+            return ContainerTool::DockerCompose;
+
+        default:
+            return ContainerTool::Docker;
+    }
+}
+
+
 QVector<amnezia::Proto> ContainerProps::protocolsForContainer(amnezia::DockerContainer container)
 {
     switch (container) {

@@ -32,6 +32,11 @@ enum DockerContainer {
 Q_ENUM_NS(DockerContainer)
 } // namespace ContainerEnumNS
 
+enum ContainerTool {
+    Docker = 0,
+    DockerCompose
+};
+
 using namespace ContainerEnumNS;
 using namespace ProtocolEnumNS;
 
@@ -43,6 +48,7 @@ public:
     Q_INVOKABLE static amnezia::DockerContainer containerFromString(const QString &container);
     Q_INVOKABLE static QString containerToString(amnezia::DockerContainer container);
     Q_INVOKABLE static QString containerTypeToString(amnezia::DockerContainer c);
+    Q_INVOKABLE static amnezia::ContainerTool containerToolForContainer(amnezia::DockerContainer container);
 
     Q_INVOKABLE static QList<amnezia::DockerContainer> allContainers();
 

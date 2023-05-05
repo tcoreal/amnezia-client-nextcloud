@@ -13,6 +13,7 @@ enum SharedScriptType {
     install_docker,
     build_container,
     remove_container,
+    remove_docker_compose,
     remove_all_containers,
     setup_host_firewall,
     check_connection,

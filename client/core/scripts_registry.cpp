@@ -30,6 +30,7 @@ QString amnezia::scriptName(SharedScriptType type)
     case SharedScriptType::install_docker: return QLatin1String("install_docker.sh");
     case SharedScriptType::build_container: return QLatin1String("build_container.sh");
     case SharedScriptType::remove_container: return QLatin1String("remove_container.sh");
+    case SharedScriptType::remove_docker_compose: return QLatin1String("remove_docker_compose.sh");
     case SharedScriptType::remove_all_containers: return QLatin1String("remove_all_containers.sh");
     case SharedScriptType::setup_host_firewall: return QLatin1String("setup_host_firewall.sh");
     case SharedScriptType::check_connection: return QLatin1String("check_connection.sh");

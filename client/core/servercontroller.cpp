@@ -233,9 +233,21 @@ ErrorCode ServerController::removeAllContainers(const ServerCredentials &credent
 
 ErrorCode ServerController::removeContainer(const ServerCredentials &credentials, DockerContainer container)
 {
-    return runScript(credentials,
-        replaceVars(amnezia::scriptData(SharedScriptType::remove_container),
-            genVarsForScript(credentials, container)));
+
+    switch (amnezia::ContainerProps::containerToolForContainer(container)) {
+        case ContainerTool::Docker:
+            return runScript(credentials,
+                         replaceVars(amnezia::scriptData(SharedScriptType::remove_container),
+                                     genVarsForScript(credentials, container)));
+        case ContainerTool::DockerCompose:
+            // TODO: re-activate when it's clear what folder is it running in
+            /*
+            return runScript(credentials,
+                         replaceVars(amnezia::scriptData(SharedScriptType::remove_docker_compose),
+                                     genVarsForScript(credentials, container)));*/
+            return ErrorCode::NoError;
+    }
+
 }
 
 ErrorCode ServerController::setupContainer(const ServerCredentials &credentials, DockerContainer container,
@@ -393,26 +405,29 @@ ErrorCode ServerController::prepareHostWorker(const ServerCredentials &credentia
 
 ErrorCode ServerController::buildContainerWorker(const ServerCredentials &credentials, DockerContainer container, const QJsonObject &config)
 {
-    ErrorCode e = uploadFileToHost(credentials, amnezia::scriptData(ProtocolScriptType::dockerfile, container).toUtf8(),
-        amnezia::server::getDockerfileFolder(container) + "/Dockerfile");
+    // Build stage is only needed for docker, but not for docker-compose
+    if (amnezia::ContainerProps::containerToolForContainer(container) == ContainerTool::Docker) {
+         ErrorCode e = uploadFileToHost(credentials, amnezia::scriptData(ProtocolScriptType::dockerfile, container).toUtf8(),
+                                        amnezia::server::getDockerfileFolder(container) + "/Dockerfile");
 
-    if (e) return e;
+         if (e) return e;
 
-    QString stdOut;
-    auto cbReadStdOut = [&](const QString &data, libssh::Client &) {
-        stdOut += data + "\n";
-        return ErrorCode::NoError;
-    };
-//    auto cbReadStdErr = [&](const QString &data, QSharedPointer<QSsh::SshRemoteProcess> proc) {
-//        stdOut += data + "\n";
-//    };
+         QString stdOut;
+         auto cbReadStdOut = [&](const QString &data, libssh::Client &) {
+             stdOut += data + "\n";
+             return ErrorCode::NoError;
+         };
+         //    auto cbReadStdErr = [&](const QString &data, QSharedPointer<QSsh::SshRemoteProcess> proc) {
+         //        stdOut += data + "\n";
+         //    };
 
-    e = runScript(credentials,
-        replaceVars(amnezia::scriptData(SharedScriptType::build_container),
-                    genVarsForScript(credentials, container, config)), cbReadStdOut);
-    if (e) return e;
-
-    return e;
+         e = runScript(credentials,
+                       replaceVars(amnezia::scriptData(SharedScriptType::build_container),
+                                   genVarsForScript(credentials, container, config)), cbReadStdOut);
+         return e;
+    } else {
+         return ErrorCode::NoError;
+    }
 }
 
 ErrorCode ServerController::runContainerWorker(const ServerCredentials &credentials, DockerContainer container, QJsonObject &config)
